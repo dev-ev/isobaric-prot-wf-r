@@ -1,8 +1,12 @@
 # isobarc-prot-wf-r
 Simple workflow for the isobaric-labeling proteomic data with ANOVA and T-testing
 
-
-See the main highlights below:
+The scripts were developed in the [RStudio IDE](https://www.rstudio.com/).
+Usage:
+* simply download and run the ".R" scripts
+* Pay particular attention to the format of the output file and to sample names. The example data has the quantitative data in "ABindance Ratio" columns, the biological replicates from the same group are named *xyz_1*, *xyz_2*, *xyz_3*.
+* 
+See the main highlights of the workflows below:
 ```r
 #library(readxl)
 library(dplyr)
