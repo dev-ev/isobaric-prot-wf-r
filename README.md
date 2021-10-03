@@ -226,29 +226,16 @@ dfANOVA$MaxLog2FC <- apply(
     max(log_means) - min(log_means)
   }
 )
-
-#Filter on adjusted p-value and minimal fold-change
-print("Proteins with adjusted ANOVA P <= 0.01 and FC > log2(1.5) [50%]")
 ```
 
-```
-## [1] "Proteins with adjusted ANOVA P <= 0.01 and FC > log2(1.5) [50%]"
-```
+
+Seelct proteins with adjusted ANOVA P <= 0.01 and FC > log2(1.5)
+
 
 ```r
 dfANOVA.Sign <- dfANOVA %>%
   filter(adjPval <= 0.01 & MaxLog2FC >= log2(1.5) ) %>%
   select(cols_anova)
-```
-
-```
-## Note: Using an external vector in selections is ambiguous.
-## ℹ Use `all_of(cols_anova)` instead of `cols_anova` to silence this message.
-## ℹ See <https://tidyselect.r-lib.org/reference/faq-external-vector.html>.
-## This message is displayed once per session.
-```
-
-```r
 dim(dfANOVA.Sign)
 ```
 
