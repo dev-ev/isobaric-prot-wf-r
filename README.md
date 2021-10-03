@@ -4,7 +4,7 @@ Simple workflow for the isobaric-labeling proteomic data with ANOVA and T-testin
 The scripts were developed in the [RStudio IDE](https://www.rstudio.com/).
 Usage:
 * simply download and run the ".R" scripts
-* Pay particular attention to the format of the output file and to sample names. The example data has the quantitative data in "ABindance Ratio" columns, the biological replicates from the same group are named *xyz_1*, *xyz_2*, *xyz_3*.
+* Pay particular attention to the format of the output file and to sample names. The example data has the quantitative data in "Abundance Ratio" columns, the biological replicates from the same group are named *xyz_1*, *xyz_2*, *xyz_3*.
 * 
 See the main highlights of the workflows below:
 ```r
@@ -136,29 +136,6 @@ ggplot(
 ![TKO_PCA_components_3_4](figure/PCA_PCs34.png)
 
 ```r
-#Pairwise scatter plots
-#Consider this for the tables of the moderate size
-#This is probably not suitable for datasets with many dozens of samples
-#For those, use the correlation heatmap
-panel.cor <- function(x, y){
-  usr <- par("usr"); on.exit(par(usr))
-  par(usr = c(0, 1, 0, 1))
-  r <- round(cor(x, y), digits=2)
-  txt <- paste0("R = ", r)
-  cex.cor <- 0.8/strwidth(txt)
-  text(0.5, 0.5, txt)
-}
-upper.panel<-function(x, y){
-  points(x,y, pch = 19, cex = 0.4, col = alpha("blue", 0.2))
-}
-pairs(dfWide, lower.panel = panel.cor, upper.panel = upper.panel,
-      main = "Correlations on Proteins")
-```
-
-![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-5.png)
-
-
-```r
 #Calculate one-way ANOVA P-values
 dfANOVA <- dfWide
 cols_anova <- c("his4_1", "his4_2", "his4_3", "met6_1", "met6_2", "met6_3", "ura2_1", "ura2_2", "ura2_3")
@@ -229,18 +206,18 @@ dfANOVA$MaxLog2FC <- apply(
 ```
 
 
-Seelct proteins with adjusted ANOVA P <= 0.01 and FC > log2(1.5)
+Seelct proteins with adjusted ANOVA P <= 0.05 and FC > log2(1.4) (40%)
 
 
 ```r
 dfANOVA.Sign <- dfANOVA %>%
-  filter(adjPval <= 0.01 & MaxLog2FC >= log2(1.5) ) %>%
+  filter(adjPval <= 0.05 & MaxLog2FC >= log2(1.4) ) %>%
   select(cols_anova)
 dim(dfANOVA.Sign)
 ```
 
 ```
-## [1] 67  9
+## [1] 123  9
 ```
 
 ```r
@@ -250,7 +227,7 @@ heatmap(
 )
 ```
 
-![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-7.png)
+![plot of chunk unnamed-chunk-1](figure/anova_hm_q005_fc14.png)
 
 ```r
 calc_ttest <- function(df, groupping, gr1, gr2, maxAdjP, minFC) {
