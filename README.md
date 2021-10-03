@@ -109,6 +109,8 @@ summary(dfWide.pca)
 ## Cumulative Proportion  0.3838 0.6324 0.7655 0.81762 0.86058 0.89955 0.93710 0.96951 1.00000 1.000e+00
 ```
 
+Let's plot the first 4 principal components, as they explain the bulk of the variation within the data set:
+
 ```r
 dfWide.pca <- as.data.frame(dfWide.pca$x)
 dfWide.pca$Group <- sapply(
@@ -129,9 +131,9 @@ ggplot(
   theme_classic()
 ```
 
-![TKO_PCA_components_1_2](figure/unnamed-chunk-1-1.png)
+![TKO_PCA_components_1_2](figure/PCA_PCs12.png)
 
-![TKO_PCA_components_3_4](figure/unnamed-chunk-1-2.png)
+![TKO_PCA_components_3_4](figure/PCA_PCs34.png)
 
 ```r
 #Pairwise scatter plots
