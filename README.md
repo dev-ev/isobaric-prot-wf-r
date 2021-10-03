@@ -1,6 +1,8 @@
 # isobarc-prot-wf-r
 Simple workflow for the isobaric-labeling proteomic data with ANOVA and T-testing
 
+
+See the main highlights below:
 ```r
 #library(readxl)
 library(dplyr)
@@ -40,7 +42,7 @@ quan_columns
 ##  [1] "BY4741_2" "his4_1"   "his4_2"   "his4_3"   "met6_1"   "met6_2"   "met6_3"   "ura2_1"   "ura2_2"   "ura2_3"
 ```
 
-We prepare a "wide" table with quantitative values, as well as the "long", tidy version:
+After several stages of filtering, we prepare a "wide" table with quantitative values, as well as the "long", tidy version:
 
 ```r
 dfWide <- all_proteins %>%
