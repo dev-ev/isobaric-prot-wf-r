@@ -1,5 +1,5 @@
 # isobaric-prot-wf-r
-##Simple workflow for the isobaric-labeling proteomic data with ANOVA, t-testing, DEqMS/limma and annotation via fgsea
+## Simple workflow for isobaric-labeling proteomic data with ANOVA, t-testing, DEqMS/limma and annotation via fgsea
 
 The author recommends [RStudio IDE](https://www.rstudio.com/). The script was developed and tested on Ubuntu 20.04 with R 3.6.<br>
 Usage:
