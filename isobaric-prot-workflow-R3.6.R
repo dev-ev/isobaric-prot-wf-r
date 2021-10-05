@@ -199,7 +199,6 @@ dfANOVA$anovaPval <- apply(dfANOVA, 1, function(x) {
   df <- as.data.frame(x)
   #Select the samples for ANOVA
   #Important if you need to exclude some of the samples from the calculation
-  #cols_anova <- c("his4_1", "his4_2", "his4_3", "met6_1", "met6_2", "met6_3", "ura2_1", "ura2_2", "ura2_3")
   df$Sample <- rownames(df)
   df <- df[ df$Sample %in% cols_anova, ]
   
@@ -236,7 +235,7 @@ dfANOVA$MaxLog2FC <- apply(
 )
 
 #Filter on adjusted p-value and minimal fold-change
-print("Proteins with adjusted ANOVA P <= 0.05 and FC > log2(1.3) [40%]")
+print("Proteins with adjusted ANOVA P <= 0.05 and FC > log2(1.3) [30%]")
 dfANOVA.Sign <- dfANOVA %>%
   filter(adjPval <= 0.05 & MaxLog2FC >= log2(1.3) ) %>%
   select(cols_anova)
