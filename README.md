@@ -1,10 +1,10 @@
 # isobarc-prot-wf-r
-Simple workflow for the isobaric-labeling proteomic data with ANOVA and T-testing
+Simple workflow for the isobaric-labeling proteomic data with ANOVA, t-testing, DEqMS/limma and annotation via fgsea
 
-The scripts were developed in the [RStudio IDE](https://www.rstudio.com/).
+The author recommends [RStudio IDE](https://www.rstudio.com/). The script was developed and tested on Ubuntu 20.04 with R 3.6.
 Usage:
-* simply download and run the ".R" scripts
-* Pay particular attention to the format of the output file and to sample names. The example data has the quantitative data in "Abundance Ratio" columns, the biological replicates from the same group are named *xyz_1*, *xyz_2*, *xyz_3*.
+* simply download and run the ".R" script
+* Pay particular attention to the format of the output file and to sample names. The example table has the quantitative data in "Abundance Ratio" columns, the biological replicates from the same group are named *xyz_1*, *xyz_2*, *xyz_3*.
 * 
 See the main highlights of the workflows below:
 ```r
@@ -12,6 +12,8 @@ See the main highlights of the workflows below:
 library(dplyr)
 library(ggplot2)
 library(tidyr)
+library(DEqMS)
+library(fgsea)
 ```
 Select the work directory and import the protein table.
 <br>The example data originates from the analysis of the commercial yeast [triple-knockout (TKO) TMT standard](https://www.thermofisher.com/order/catalog/product/A40938#/A40938)
@@ -46,7 +48,7 @@ quan_columns
 ##  [1] "BY4741_2" "his4_1"   "his4_2"   "his4_3"   "met6_1"   "met6_2"   "met6_3"   "ura2_1"   "ura2_2"   "ura2_3"
 ```
 
-After several stages of filtering, we prepare a "wide" table with quantitative values, as well as the "long", tidy version:
+After several stages of filtering, we check the abundance distibution in each sample:
 
 ```r
 dfWide <- all_proteins %>%
@@ -54,47 +56,63 @@ dfWide <- all_proteins %>%
   subset (select=c("Accession", quan_columns) ) %>%
   na.omit()
 
-dfLong <- gather(dfWide, Sample, RelAbund, -Accession)
-dfLong = mutate(dfLong, log2Abund = log2(RelAbund))
-
 rownames(dfWide) <- dfWide$Accession
 dfWide$Accession <- NULL
 dfWide <- log2(dfWide)
-head(dfWide)
+#Look at the distribution of quan values
+summary(dfWide)
 ```
 
 ```
-##           BY4741_2      his4_1     his4_2      his4_3      met6_1      met6_2      met6_3      ura2_1      ura2_2      ura2_3
-## P40079 -0.02180437  0.12300395  0.2678354  0.15185882 -0.16974468 -0.26188071 -0.14401030  0.03562391  0.22774108  0.27500705
-## P27680  0.24245007  0.31034012  0.2028878  0.54892977 -0.02767496 -0.25325728 -0.18935125  0.09761080 -0.06039728 -0.04394335
-## Q06336 -0.06793883  0.13750352  0.3628906 -0.36959453  0.09491165 -0.20091269 -0.24468510  0.10299399 -0.28982725 -0.13764780
-## P39704  0.06763872 -0.11403524 -0.1552126 -0.06793883 -0.29512804 -0.11091590  0.02715405 -0.13606155 -0.48398485 -0.05139915
-## P27999 -0.03504695  0.15962919  0.3184615  0.30917619 -0.18278608 -0.04543143 -0.26015190 -0.03356953 -0.08314124  0.02998287
-## P46955 -0.10935876  0.09085343  0.0229004  0.42545930 -0.07248275 -0.35845397 -0.31114826 -0.04841221 -0.26534457  0.10567808
+##     BY4741_2            his4_1              his4_2              his4_3              met6_1        
+##  Min.   :-0.76121   Min.   :-2.426625   Min.   :-2.343732   Min.   :-2.434403   Min.   :-3.36587  
+##  1st Qu.:-0.08161   1st Qu.:-0.189351   1st Qu.:-0.193058   1st Qu.:-0.195946   1st Qu.:-0.23447  
+##  Median :-0.01013   Median :-0.020340   Median :-0.014500   Median :-0.017417   Median :-0.08238  
+##  Mean   :-0.01831   Mean   : 0.005853   Mean   : 0.003676   Mean   : 0.000839   Mean   :-0.06536  
+##  3rd Qu.: 0.04963   3rd Qu.: 0.180148   3rd Qu.: 0.186501   3rd Qu.: 0.180148   3rd Qu.: 0.09390  
+##  Max.   : 0.76043   Max.   : 3.528321   Max.   : 3.441218   Max.   : 3.478195   Max.   : 1.84679  
+##      met6_2             met6_3             ura2_1             ura2_2             ura2_3        
+##  Min.   :-3.15843   Min.   :-3.26534   Min.   :-2.49005   Min.   :-2.57347   Min.   :-2.44222  
+##  1st Qu.:-0.20257   1st Qu.:-0.22600   1st Qu.:-0.18033   1st Qu.:-0.18115   1st Qu.:-0.16974  
+##  Median :-0.06492   Median :-0.07704   Median :-0.03579   Median :-0.04097   Median :-0.03357  
+##  Mean   :-0.04076   Mean   :-0.05791   Mean   :-0.02990   Mean   :-0.03511   Mean   :-0.02894  
+##  3rd Qu.: 0.10467   3rd Qu.: 0.09119   3rd Qu.: 0.12433   3rd Qu.: 0.11636   3rd Qu.: 0.10836  
+##  Max.   : 1.68840   Max.   : 1.79119   Max.   : 2.07108   Max.   : 1.61259   Max.   : 1.92828
 ```
 
 ```r
-dfLong$Group <- apply(
-  dfLong, 1, function(x) {
-    sampleName <- x["Sample"]
-    #OBS: format-dependent operations
-    strsplit(sampleName, "_")[[1]][[1]]
-  }
-)
-head(dfLong)
+#Box Plot
+boxplot(
+  Log2_Abund~Sample, data = gather(dfWide, Sample, Log2_Abund),
+  main = "Original Log2 Ratios"
+  )
 ```
 
-```
-##   Accession   Sample RelAbund   log2Abund  Group
-## 1    P40079 BY4741_2    0.985 -0.02180437 BY4741
-## 2    P27680 BY4741_2    1.183  0.24245007 BY4741
-## 3    Q06336 BY4741_2    0.954 -0.06793883 BY4741
-## 4    P39704 BY4741_2    1.048  0.06763872 BY4741
-## 5    P27999 BY4741_2    0.976 -0.03504695 BY4741
-## 6    P46955 BY4741_2    0.927 -0.10935876 BY4741
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-1.png)
+
+Proteomic data may require normalization. Let's normalize each sample on it's median and check out the resulting distributions:
+
+```r
+dfNorm <- mapply('-', dfWide, apply(dfWide,2,median))
+dfNorm <- as.data.frame(dfNorm, row.names = row.names(dfWide))
+boxplot(
+  Log2_Abund~Sample, data = gather(dfNorm, Sample, Log2_Abund),
+  main = "Normalized Log2 Ratios"
+  )
 ```
 
-Look at the pronciple component analysis on the samples:
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-2.png)
+
+```r
+#If desired, use the normalized data for the downstream operations
+dfWide <- dfNorm
+dfWide$Accession <- row.names(dfWide)
+dfLong <- gather(dfWide, Sample, Log2_Abund, -Accession)
+dfWide$Accession <- NULL
+```
+
+
+Look at the principle component analysis on samples:
 ```r
 dfWide.t <-  t(dfWide)
 dfWide.pca <- prcomp(dfWide.t, center = TRUE, scale. = FALSE)
@@ -104,9 +122,9 @@ summary(dfWide.pca)
 ```
 ## Importance of components:
 ##                           PC1    PC2    PC3     PC4     PC5     PC6     PC7     PC8     PC9      PC10
-## Standard deviation     4.8331 3.8904 2.8461 1.78095 1.61699 1.54019 1.51172 1.40449 1.36241 1.646e-15
-## Proportion of Variance 0.3838 0.2487 0.1331 0.05211 0.04296 0.03897 0.03755 0.03241 0.03049 0.000e+00
-## Cumulative Proportion  0.3838 0.6324 0.7655 0.81762 0.86058 0.89955 0.93710 0.96951 1.00000 1.000e+00
+## Standard deviation     4.7762 3.8970 2.8019 1.78159 1.61259 1.53323 1.51155 1.40213 1.36160 2.443e-15
+## Proportion of Variance 0.3797 0.2528 0.1307 0.05283 0.04328 0.03913 0.03803 0.03272 0.03086 0.000e+00
+## Cumulative Proportion  0.3797 0.6325 0.7631 0.81598 0.85926 0.89839 0.93642 0.96914 1.00000 1.000e+00
 ```
 
 Let's plot the first 4 principal components, as they explain the bulk of the variation within the data set:
@@ -132,9 +150,21 @@ ggplot(
 ```
 
 ![TKO_PCA_components_1_2](figure/PCA_PCs12.png)
-
+```r
+#Principal components 3 and 4
+ggplot(
+  dfWide.pca,
+  aes(x = PC3, y = PC4, colour = Group )
+) +
+  geom_point(shape=19, size=4, alpha = 0.7)+
+  geom_hline(yintercept = 0, colour = "gray65") +
+  geom_vline(xintercept = 0, colour = "gray65") +
+  ggtitle("PCA On Proteins") +
+  theme_classic()
+```
 ![TKO_PCA_components_3_4](figure/PCA_PCs34.png)
 
+One-way ANOVA analysis:
 ```r
 #Calculate one-way ANOVA P-values
 dfANOVA <- dfWide
@@ -206,18 +236,17 @@ dfANOVA$MaxLog2FC <- apply(
 ```
 
 
-Seelct proteins with adjusted ANOVA P <= 0.05 and FC > log2(1.4) (40%)
-
+Select proteins with adjusted ANOVA P <= 0.05 and FC > log2(1.3) (30%)
 
 ```r
 dfANOVA.Sign <- dfANOVA %>%
-  filter(adjPval <= 0.05 & MaxLog2FC >= log2(1.4) ) %>%
+  filter(adjPval <= 0.05 & MaxLog2FC >= log2(1.3) ) %>%
   select(cols_anova)
 dim(dfANOVA.Sign)
 ```
 
 ```
-## [1] 123  9
+## [1] 190  9
 ```
 
 ```r
@@ -227,8 +256,11 @@ heatmap(
 )
 ```
 
-![plot of chunk unnamed-chunk-1](figure/anova_hm_q005_fc14.png)
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-8.png)
 
+
+The classic way to compare two groups at a time is the Student's t-test.
+Let's compare the *met6* knockouts and *his4* knockouts as an example:
 ```r
 calc_ttest <- function(df, groupping, gr1, gr2, maxAdjP, minFC) {
   df <- df[ c( groupping[[gr1]], groupping[[gr2]]  ) ]
@@ -267,20 +299,40 @@ calc_ttest <- function(df, groupping, gr1, gr2, maxAdjP, minFC) {
   df
 }
 maxAdjP <- 0.05
-minLog2FC <- round(log2(1.4), 3)
+minLog2FC <- round(log2(1.3), 3)
 gr1 <- "met6"
-gr2 <- "ura2"
-df_met_his <- calc_ttest(dfWide, groups, gr1, gr2, maxAdjP, minLog2FC )
+gr2 <- "his4"
+dfTtest <- calc_ttest(dfWide, groups, gr1, gr2, maxAdjP, minLog2FC )
+#How many proteins have adj. P <= 0.05?
+dim( filter(dfTtest, adjPval <= maxAdjP) )
+```
+```
+## [1] 493  11
+```
+Let's ad the minimal fold change to concentrate on the strongest significant effects.
+There were 116 proteins that pass the filtering criteria:
+```r
+dim(dfTtest %>%
+      filter(adjPval <= maxAdjP) %>%
+      filter( Log2FC >= minLog2FC | Log2FC <= -1*minLog2FC ))
+```
 
-df_met_his <- merge(
-  df_met_his, all_proteins,
+```
+## [1] 116  11
+```
+
+Volcano plot for the met6-his4 comparison:
+```r
+#Add columns with the gene names and other info
+dfTtest <- merge(
+  dfTtest, all_proteins,
   by.x="row.names", by.y="Accession",
   suffixes=c("", "_"), sort=FALSE
   )
 
 #Volcano plot
 ggplot(
-  df_met_his,
+  dfTtest,
   aes(x = Log2FC, y = Log10adjPval, colour = Diff_Abund )
 ) +
   geom_point(shape=19, size=2, alpha = 0.6)+
@@ -302,10 +354,11 @@ ggplot(
     ) +
   labs(x = paste("Log2 FC", gr2, "-", gr1), y = "-Log10 Adj. P-value" ) +
   geom_text(
-    data = subset(df_met_his, Log2FC >=0.9 | Log2FC <= -0.8),
+    data = subset(dfTtest, Log2FC >=0.9 | Log2FC <= -0.8),
     aes( Log2FC, Log10adjPval, label = Gene),
-    alpha = 0.6, hjust = 0.1, vjust = -0.5
+    alpha = 0.6, hjust = 0.5, vjust = -0.6
     )
 ```
 
-![TKO_Volcano_Plot_met6_ura2](figure/unnamed-chunk-1-8.png)
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-9.png)
+
