@@ -93,7 +93,9 @@ boxplot(
 Proteomic data may require normalization. Let's normalize each sample on it's median and check out the resulting distributions:
 
 ```r
+#For each column, subtract the median of the column from each of it's values
 dfNorm <- mapply('-', dfWide, apply(dfWide,2,median))
+#Transform into a dataframe
 dfNorm <- as.data.frame(dfNorm, row.names = row.names(dfWide))
 boxplot(
   Log2_Abund~Sample, data = gather(dfNorm, Sample, Log2_Abund),
