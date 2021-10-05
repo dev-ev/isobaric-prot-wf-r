@@ -166,8 +166,6 @@ ggplot(
 
 One-way ANOVA analysis:
 ```r
-#Calculate one-way ANOVA P-values
-dfANOVA <- dfWide
 cols_anova <- c("his4_1", "his4_2", "his4_3", "met6_1", "met6_2", "met6_3", "ura2_1", "ura2_2", "ura2_3")
 #Create the named list with our groups
 groups <- list()
@@ -194,6 +192,7 @@ groups
 ```
 
 ```r
+dfANOVA <- dfWide
 dfANOVA$anovaPval <- apply(dfANOVA, 1, function(x) {
   df <- as.data.frame(x)
   #Select the samples for ANOVA
@@ -259,7 +258,7 @@ heatmap(
 ![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-8.png)
 
 
-The classic way to compare two groups at a time is the Student's t-test.
+The classic way to compare levels in two groups is the Student's t-test.<br>
 Let's compare the *met6* knockouts and *his4* knockouts as an example:
 ```r
 calc_ttest <- function(df, groupping, gr1, gr2, maxAdjP, minFC) {
@@ -309,7 +308,7 @@ dim( filter(dfTtest, adjPval <= maxAdjP) )
 ```
 ## [1] 493  11
 ```
-Let's ad the minimal fold change to concentrate on the strongest significant effects.
+Let's ad the minimal fold change to concentrate on the strongest significant effects.<br>
 There were 116 proteins that pass the filtering criteria:
 ```r
 dim(dfTtest %>%
