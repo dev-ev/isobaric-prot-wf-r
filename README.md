@@ -1,9 +1,9 @@
 # isobarc-prot-wf-r
 Simple workflow for the isobaric-labeling proteomic data with ANOVA, t-testing, DEqMS/limma and annotation via fgsea
 
-The author recommends [RStudio IDE](https://www.rstudio.com/). The script was developed and tested on Ubuntu 20.04 with R 3.6.
+The author recommends [RStudio IDE](https://www.rstudio.com/). The script was developed and tested on Ubuntu 20.04 with R 3.6.<br>
 Usage:
-* simply download and run the ".R" script
+* Download and run the ".R" script, adapting the paths and formats
 * Pay particular attention to the format of the output file and to sample names. The example table has the quantitative data in "Abundance Ratio" columns, the biological replicates from the same group are named *xyz_1*, *xyz_2*, *xyz_3*.
 * 
 See the main highlights of the workflows below:
