@@ -363,3 +363,214 @@ ggplot(
 
 ![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-9.png)
 
+
+[DEqMS](https://www.bioconductor.org/packages/release/bioc/html/DEqMS.html) is an R package for differential expression analysis that have been developped specifically for proteomic data by Yafeng Zhu in Janne Lehtiö's lab in Stockholm. The algorithm estimates the protein variance based on the number of peptides or PSMs, claiming better accuracy in detecting differences in protein levels, see [the open-access MCP article](https://www.mcponline.org/article/S1535-9476(20)34997-5/fulltext) for details. DEqMS builds on the widely used [limma package](https://bioconductor.org/packages/release/bioc/html/limma.html), p-value and BH-adjusted p-value from limma are reported as a bonus, alongside the spectra count adjusted posterior p-values and BH-adjusted p-values calculated by DEqMS.<br>
+Let's apply the algorithm to the TKO data:
+
+```r
+dfD <- dfWide[cols_anova]
+#Define the design vector
+cond = as.factor(
+  c("his4", "his4", "his4", "met6", "met6", "met6", "ura2", "ura2", "ura2")
+)
+design = model.matrix(~0+cond)
+colnames(design) = gsub("cond","",colnames(design))
+#Make contrasts
+x <- c(
+  "his4-met6", "his4-ura2", "ura2-met6" 
+  )
+contrast =  makeContrasts(contrasts=x,levels=design)
+fit1 <- lmFit(dfD, design)
+fit2 <- contrasts.fit(fit1,contrasts = contrast)
+fit3 <- eBayes(fit2)
+#Extract PSM count information
+psm_count_table <- dfD %>%
+  merge(
+    all_proteins[c("Accession", "Number.of.PSMs")],
+    by.x="row.names", by.y="Accession",  suffixes=c("", "_"), sort=FALSE
+    )
+row.names(psm_count_table) <- psm_count_table$Row.names
+psm_count_table <- psm_count_table[c("Number.of.PSMs")]
+fit3$count = psm_count_table[rownames(fit3$coefficients),"Number.of.PSMs"]
+fit4 = spectraCounteBayes(fit3)
+#Visualize the DEqMS calculations
+VarianceBoxplot(
+  fit4, n=30, main="TKO Variance according to DEqMS", xlab="PSM count"
+  )
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-10.png)
+
+Let's look at the contrast ura2-met6, column number 3:
+
+```r
+current_contrast <- colnames(fit4$coefficients)[[1]]
+res_DEqMS = outputResult(fit4, coef_col = 1)
+head(res_DEqMS)
+```
+
+```
+##             logFC     AveExpr         t      P.Value    adj.P.Val        B   gene count      sca.t
+## P00815 -2.8532509 -0.54962113 -85.67738 8.428621e-13 1.318236e-09 18.82971 P00815    20 -108.89141
+## P05694  3.5999485 -0.85859918  77.41234 1.846004e-12 1.443575e-09 18.37417 P05694    30   96.37396
+## P37291 -0.6922910  0.40048261 -28.07419 4.585032e-09 1.434198e-06 11.77468 P37291    36  -42.07175
+## P15992 -0.6353142  0.44930312 -27.22447 5.803328e-09 1.512734e-06 11.53513 P15992    18  -36.62270
+## P39954 -0.5661252  0.01364542 -22.95737 2.138660e-08 3.344865e-06 10.18583 P39954    22  -31.96714
+## Q12443 -1.2662064  0.60896317 -44.48587 1.329146e-10 6.929282e-08 15.15264 Q12443     4  -30.06690
+##         sca.P.Value sca.adj.pval
+## P00815 8.998668e-18 1.407392e-14
+## P05694 3.360470e-17 2.627888e-14
+## P37291 2.531791e-13 1.319907e-10
+## P15992 1.121588e-12 4.385408e-10
+## P39954 4.810014e-12 1.504572e-09
+## Q12443 9.260675e-12 2.413949e-09
+```
+Add negative log10-transfromed adjusted p-values for plotting:
+
+```r
+res_DEqMS$log.adj.P.Val  = -log10(res_DEqMS$adj.P.Val )
+res_DEqMS$log.sca.adj.pval = -log10(res_DEqMS$sca.adj.pval)
+```
+How many proteins have adj. P <= 0.05 according to LIMMA?
+```r
+maxAdjP <- 0.05
+minLog2FC <- round(log2(1.3), 3)
+dim(
+  filter(res_DEqMS, adj.P.Val <= maxAdjP)
+)
+```
+
+```
+## [1] 611  13
+```
+How many proteins have adj. P <= 0.05 and Log2 FC >= log2(1.3) [30%] according to LIMMA?
+```r
+dim(res_DEqMS %>%
+      filter(adj.P.Val <= maxAdjP) %>%
+      filter( logFC >= minLog2FC | logFC <= -1*minLog2FC ))
+```
+
+```
+## [1] 148  13
+```
+How many proteins have adj. P <= 0.05 according to DEqMS?
+```r
+dim(
+  filter(res_DEqMS, sca.adj.pval <= maxAdjP)
+)
+```
+
+```
+## [1] 645  13
+```
+How many proteins have adj. P <= 0.05 and Log2 FC >= log2(1.3) [30%] according to DEqMS?
+```r
+dim(res_DEqMS %>%
+      filter(sca.adj.pval <= maxAdjP) %>%
+      filter( logFC >= minLog2FC | logFC <= -1*minLog2FC ))
+```
+
+```
+## [1] 154  13
+```
+
+```r
+gr1 <- strsplit(current_contrast, "-")[[1]][[2]]
+gr2 <- strsplit(current_contrast, "-")[[1]][[1]]
+#Add categorical annotation columns for LIMMA and DEqMS
+res_DEqMS$Diff_LIMMA <- apply(
+  res_DEqMS, 1, function(x) {
+    local_p <- as.numeric(x[["adj.P.Val"]])
+    local_fc <- as.numeric(x[["logFC"]])
+    if (local_p <= maxAdjP & local_fc >= minLog2FC) {
+      return( paste("Up in", gr2) )
+    } else if (local_p <= maxAdjP & local_fc <= -1*minLog2FC) {
+      return( paste("Up in", gr1) )
+    } else {
+      return('Non-significant')
+    }
+  }
+)
+res_DEqMS$Diff_DEqMS <- apply(
+  res_DEqMS, 1, function(x) {
+    local_p <- as.numeric(x[["sca.adj.pval"]])
+    local_fc <- as.numeric(x[["logFC"]])
+    if (local_p <= maxAdjP & local_fc >= minLog2FC) {
+      return( paste("Up in", gr2) )
+    } else if (local_p <= maxAdjP & local_fc <= -1*minLog2FC) {
+      return( paste("Up in", gr1) )
+    } else {
+      return('Non-significant')
+    }
+  }
+)
+```
+
+Volcano plot for LIMMA
+```r
+ggplot(
+  res_DEqMS,
+  aes(x = logFC, y = log.adj.P.Val, colour = Diff_LIMMA )
+) +
+  geom_point(shape=19, size=2, alpha = 0.6)+
+  geom_hline(yintercept = -1*log10(maxAdjP), colour = "gray65") +
+  geom_vline(xintercept = 0, colour = "gray65") +
+  geom_vline(xintercept = -1*minLog2FC, colour = "gray65") +
+  geom_vline(xintercept = minLog2FC, colour = "gray65") +
+  ggtitle(
+    paste(
+      "LIMMA ", current_contrast,
+      " Adjusted P-value<=", maxAdjP, " Log2 FC>=", minLog2FC,
+      sep=""
+    )
+  ) +
+  theme_classic() +
+  theme(
+    legend.title = element_blank(), legend.text = element_text(size=12),
+    plot.title = element_text(size=16)
+  ) +
+  labs(x = paste("Log2 FC",current_contrast), y = "-Log10 Adj. P-value" ) +
+  geom_text(
+    data = subset(res_DEqMS, logFC >=1.0 | logFC <= -0.8),
+    aes( logFC, log.adj.P.Val, label = Gene),
+    alpha = 0.6, hjust = 0.5, vjust = -0.6
+  )
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-11.png)
+
+Volcano plot for DEqMS
+```r
+ggplot(
+  res_DEqMS,
+  aes(x = logFC, y = log.sca.adj.pval, colour = Diff_DEqMS )
+) +
+  geom_point(shape=19, size=2, alpha = 0.6)+
+  geom_hline(yintercept = -1*log10(maxAdjP), colour = "gray65") +
+  geom_vline(xintercept = 0, colour = "gray65") +
+  geom_vline(xintercept = -1*minLog2FC, colour = "gray65") +
+  geom_vline(xintercept = minLog2FC, colour = "gray65") +
+  ggtitle(
+    paste(
+      "DEqMS ", current_contrast,
+      " Adjusted P-value<=", maxAdjP, " Log2 FC>=", minLog2FC,
+      sep=""
+    )
+  ) +
+  theme_classic() +
+  theme(
+    legend.title = element_blank(), legend.text = element_text(size=12),
+    plot.title = element_text(size=16)
+  ) +
+  labs(x = paste("Log2 FC",current_contrast), y = "-Log10 Adj. P-value" ) +
+  geom_text(
+    data = subset(res_DEqMS, logFC >=0.9 | logFC <= -0.8),
+    aes( logFC, log.sca.adj.pval, label = Gene),
+    alpha = 0.6, hjust = 0.5, vjust = -0.6
+  )
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-12.png)
+
+
+
