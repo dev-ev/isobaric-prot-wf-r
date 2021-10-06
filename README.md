@@ -393,7 +393,10 @@ row.names(psm_count_table) <- psm_count_table$Row.names
 psm_count_table <- psm_count_table[c("Number.of.PSMs")]
 fit3$count = psm_count_table[rownames(fit3$coefficients),"Number.of.PSMs"]
 fit4 = spectraCounteBayes(fit3)
-#Visualize the DEqMS calculations
+```
+
+The data-dependent variance distribution looks as follows:
+```r
 VarianceBoxplot(
   fit4, n=30, main="TKO Variance according to DEqMS", xlab="PSM count"
   )
