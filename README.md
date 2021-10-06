@@ -576,4 +576,157 @@ ggplot(
 ![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-12.png)
 
 
+Furthermore, gene set enrichment using [fgsea package](http://bioconductor.org/packages/release/bioc/html/fgsea.html) can be employed for basic functional annotation. I have downloaded the gene sets for yeast from [the YeastEnrichr resource](https://maayanlab.cloud/YeastEnrichr/#stats), with gene names as identifiers. Let's use the KEGG pathways as an example:
+
+```r
+pathways <- gmtPathways("Yeast_KEGG_2018.gmt")
+
+#Prepare the rank file for the ura2-met6 contrast
+#Replace the UNIPROT accession with the Gene name
+dfGSEA <- res_DEqMS[c("Gene", "logFC", "log.sca.adj.pval")]
+```
+Use the product (Log2FC * -Log10(adj.P.val.SCA)) to rank genes in the table:
+```r
+dfGSEA$rank <- apply(
+  dfGSEA, 1, function(x) {
+    as.numeric(x[[2]]) * as.numeric(x[[3]])
+  }
+)
+
+ranks <- as.numeric(dfGSEA$rank)
+names(ranks) <- dfGSEA$Gene
+ranks <- sort(ranks)
+ranks[1:10]
+```
+
+```
+##       HIS4       RTN2      SIP18      HSP12       GCV2       SHM2      HSP26       SAM1       SAH1       GPH1 
+## -39.522063 -10.911242  -8.174439  -7.404254  -6.980468  -6.839459  -5.945264  -5.255033  -4.994689  -4.869912
+```
+
+Run fgsea and go with the default settings for enrichment:
+```r
+res_gsea <- fgseaMultilevel(pathways, ranks, minSize=15, maxSize=500)
+head(res_gsea)
+```
+
+```
+##                                                  pathway      pval      padj    log2err         ES        NES
+## 1: Alanine, aspartate and glutamate metabolism  sce00250 0.1171875 0.5433239 0.18138313 -0.7167997 -1.3618696
+## 2:                  Amino acid related enzymes  sce01007 0.1351351 0.5492308 0.16693385 -0.6427450 -1.3379893
+## 3: Amino sugar and nucleotide sugar metabolism  sce00520 0.1035156 0.5433239 0.19381330 -0.7312954 -1.3894104
+## 4:                 Aminoacyl-tRNA biosynthesis  sce00970 0.1520468 0.5492308 0.15740290 -0.6841687 -1.3095419
+## 5:                           Autophagy - yeast  sce04138 0.6789366 0.9358315 0.06479434  0.4291941  0.8390423
+## 6:                          Cell cycle - yeast  sce04111 0.1710794 0.5492308 0.15114876  0.6911210  1.2884854
+##    size                         leadingEdge
+## 1:   20 GAD1,ADE4,UGA1,ASN2,ADE13,ADE12,...
+## 2:   34   BAT2,UGA1,KRS1,SER1,CAR2,DPS1,...
+## 3:   20   HXK1,PGM2,GLK1,MCR1,PGI1,GFA1,...
+## 4:   21  KRS1,DPS1,ILS1,VAS1,THS1,DED81,...
+## 5:   21                           VTI1,RAS1
+## 6:   16                 HRT1,TUP1,CYC8,PHO5
+```
+
+Ten pathways with the largest positive enrichment scores:
+```r
+res_gsea[ES > 0][head(order(pval), n=10),]
+```
+
+```
+##                                          pathway       pval      padj    log2err        ES       NES size
+##  1:                     RNA polymerase  sce03020 0.06680162 0.5433239 0.24891111 0.7692610 1.4599652   18
+##  2: Cysteine and methionine metabolism  sce00270 0.08230453 0.5433239 0.22496609 0.7422452 1.4533972   22
+##  3:            Transcription machinery  sce03021 0.10344828 0.5433239 0.19782202 0.6075393 1.3562776   47
+##  4:                 Cell cycle - yeast  sce04111 0.17107943 0.5492308 0.15114876 0.6911210 1.2884854   16
+##  5:              Pyrimidine metabolism  sce00240 0.19161677 0.5492308 0.14040624 0.5678268 1.2208266   37
+##  6:                      RNA transport  sce03013 0.25100402 0.6095812 0.12098514 0.5122395 1.1346803   43
+##  7:                Translation factors  sce03012 0.35699797 0.6743295 0.09889030 0.4655867 1.0341527   45
+##  8: Chromosome and associated proteins  sce03036 0.41010101 0.7001980 0.09054289 0.4193949 0.9933531   75
+##  9:              Cytoskeleton proteins  sce04812 0.41090147 0.7001980 0.09255289 0.4955390 1.0193067   29
+## 10:     MAPK signaling pathway - yeast  sce04011 0.42973523 0.7069838 0.08835944 0.5100515 1.0137484   23
+##                                leadingEdge
+##  1: RPC11,RPA14,RPA12,RPB9,RPC53,RPC19,...
+##  2:                 MET6,SAM4,BAT1,YKL069W
+##  3:   RPC11,PAF1,RPA14,RPA12,RPB9,TOA2,...
+##  4:                    HRT1,TUP1,CYC8,PHO5
+##  5:   URA4,FCY1,RPC11,DPB4,RPA14,RPA12,...
+##  6:    SUI1,TIF11,NUP57,TIF3,UBC9,MLP1,...
+##  7:     SUI1,TIF11,EFB1,EAP1,HYP2,TIF3,...
+##  8:     HTB2,NSR1,DPB4,SDC1,NHP10,HTZ1,...
+##  9:     IQG1,ARC15,DYN2,TPM1,TPM2,RBL2,...
+## 10:               BAR1,PAF1,YCK1,TUP1,CYC8
+```
+
+Ten pathways with the largest negative enrichment scores:
+```r
+res_gsea[ES < 0][head(order(pval), n=10),]
+```
+
+```
+##                                                   pathway       pval      padj   log2err         ES       NES
+##  1:     Glyoxylate and dicarboxylate metabolism  sce00630 0.03913894 0.5433239 0.3234705 -0.8231764 -1.513008
+##  2:    Glycine, serine and threonine metabolism  sce00260 0.06601942 0.5433239 0.2450418 -0.7571428 -1.485321
+##  3:                   Pentose phosphate pathway  sce00030 0.07086614 0.5433239 0.2377938 -0.7684281 -1.436140
+##  4:                Glycolysis - Gluconeogenesis  sce00010 0.07587549 0.5433239 0.2279872 -0.7009631 -1.478111
+##  5: Amino sugar and nucleotide sugar metabolism  sce00520 0.10351562 0.5433239 0.1938133 -0.7312954 -1.389410
+##  6:                                   Phagosome  sce04145 0.10916179 0.5433239 0.1882041 -0.7191699 -1.376536
+##  7:               Starch and sucrose metabolism  sce00500 0.11456311 0.5433239 0.1830239 -0.6909523 -1.355472
+##  8: Alanine, aspartate and glutamate metabolism  sce00250 0.11718750 0.5433239 0.1813831 -0.7167997 -1.361870
+##  9:                  Amino acid related enzymes  sce01007 0.13513514 0.5492308 0.1669338 -0.6427450 -1.337989
+## 10:                        Glycosyltransferases  sce01003 0.14147287 0.5492308 0.1631801 -0.6836442 -1.326265
+##     size                         leadingEdge
+##  1:   16                 GCV2,SHM2,GCV1,CIT1
+##  2:   24                      GCV2,SHM2,GCV1
+##  3:   18   PGM2,PFK2,PGI1,GND1,PFK1,FBA1,...
+##  4:   39  HXK1,PGM2,GLK1,CDC19,PDC1,TDH1,...
+##  5:   20   HXK1,PGM2,GLK1,MCR1,PGI1,GFA1,...
+##  6:   21   ACT1,VMA1,SSH1,SSS1,VMA2,TUB1,...
+##  7:   24   GPH1,HXK1,PGM2,GLK1,TSL1,TPS1,...
+##  8:   20 GAD1,ADE4,UGA1,ASN2,ADE13,ADE12,...
+##  9:   34   BAT2,UGA1,KRS1,SER1,CAR2,DPS1,...
+## 10:   22   TPS1,TPS2,GSY2,PMT1,KTR4,KTR1,...
+```
+Let's look at one of the pathways from the top with positive enrichment scores:
+```r
+plotEnrichment(
+  pathways[["Cysteine and methionine metabolism  sce00270"]],
+  ranks
+  ) + labs(title="Cysteine and methionine metabolism")
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-13.png)
+
+```r
+pathways[["Cysteine and methionine metabolism  sce00270"]]
+```
+
+```
+##  [1] "AAT1"    "AAT2"    "TUM1"    "MDH2"    "MDH3"    "YGR012W" "STR3"    "UTR4"    "STR2"    "ARO8"   
+## [11] "CYS4"    "HOM2"    "CYS3"    "CHA1"    "HOM3"    "HOM6"    "SAM4"    "ADI1"    "GSH2"    "SAM2"   
+## [21] "GSH1"    "YKL069W" "MEU1"    "SAM1"    "MET17"   "YLL058W" ""        "BAT2"    "BAT1"    "MDE1"   
+## [31] "MRI1"    "SPE3"    "SPE4"    "SPE2"    "SAH1"    "YML082W" "MET2"    "MHT1"    "MDH1"    "MET6"   
+## [41] "IRC7"
+```
+
+And at one of the pathways from the top with negative enrichment scores:
+```r
+plotEnrichment(
+  pathways[["Glycine, serine and threonine metabolism  sce00260"]],
+  ranks
+) + labs(title="Glycine, serine and threonine metabolism")
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-14.png)
+
+```r
+pathways[["Glycine, serine and threonine metabolism  sce00260"]]
+```
+
+```
+##  [1] "AGX1"    "HEM1"    "CYS4"    "HOM2"    "CYS3"    "CHA1"    "SER33"   "HOM3"    "HOM6"    "THR4"   
+## [11] "THR1"    "IRC15"   "CHO1"    "GLY1"    "SHM1"    ""        "SHM2"    "YMR226C" "TRP5"    "GPM2"   
+## [21] "GPM1"    "GPM3"    "TDA10"   "LPD1"    "SER3"    "SER1"    "GCV2"    "SER2"    "GCV1"    "GCV3"   
+## [31] "DSD1"    "ILV1"
+```
+
 
