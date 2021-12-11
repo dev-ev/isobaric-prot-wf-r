@@ -518,10 +518,10 @@ ggplot(
   )
 
 #Functional annotation with fgsea
-#Download the GO Molecular Function, GO Biological Process
-#Or KEGG pathways for yeast
-#From https://maayanlab.cloud/YeastEnrichr
-pathways <- gmtPathways("Yeast_KEGG_2018.gmt")
+#Download the GO Molecular Function, GO Biological Process from Uniprot
+#Available under Creative Commons license
+#Converted to .gmt files that are common for GSEA
+annotations <- gmtPathways("go-bp_gene-symbols_uniprot.gmt")
 
 #Prepare the rank file for the his4-met6 contrast
 #Replace the UNIPROT accession with the Gene name
@@ -540,19 +540,19 @@ names(ranks) <- dfGSEA$Gene
 ranks <- sort(ranks)
 ranks[1:10]
 #Enrichment analysis
-res_gsea <- fgseaMultilevel(pathways, ranks, minSize=15, maxSize=500)
+res_gsea <- fgseaMultilevel(annotations, ranks, minSize=15, maxSize=500)
 #res_gsea <- fgsea(pathways, ranks, nperm=1000, minSize=15, maxSize=500)
 head(res_gsea)
 #head(res_gsea[order(pval), ])
 res_gsea[ES > 0][head(order(pval), n=10),]
 res_gsea[ES < 0][head(order(pval), n=10),]
 plotEnrichment(
-  pathways[["Cysteine and methionine metabolism  sce00270"]],
+  annotations[["methionine biosynthetic process [GO:0009086]"]],
   ranks
-  ) + labs(title="Cysteine and methionine metabolism")
-pathways[["Cysteine and methionine metabolism  sce00270"]]
+) + labs(title="methionine biosynthetic process [GO:0009086]")
+annotations[["methionine biosynthetic process [GO:0009086]"]]
 plotEnrichment(
-  pathways[["Glycine, serine and threonine metabolism  sce00260"]],
+  annotations[["one-carbon metabolic process [GO:0006730]"]],
   ranks
-) + labs(title="Glycine, serine and threonine metabolism")
-pathways[["Glycine, serine and threonine metabolism  sce00260"]]
+) + labs(title="one-carbon metabolic process [GO:0006730]")
+annotations[["one-carbon metabolic process [GO:0006730]"]]
