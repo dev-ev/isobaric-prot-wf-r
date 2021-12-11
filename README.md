@@ -576,10 +576,11 @@ ggplot(
 ![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-12.png)
 
 
-Furthermore, gene set enrichment using [fgsea package](http://bioconductor.org/packages/release/bioc/html/fgsea.html) can be employed for basic functional annotation. I have downloaded the gene sets for yeast from [the YeastEnrichr resource](https://maayanlab.cloud/YeastEnrichr/#stats), with gene names as identifiers. Let's use the KEGG pathways as an example:
+Furthermore, gene set enrichment using [fgsea package](http://bioconductor.org/packages/release/bioc/html/fgsea.html) can be employed for basic functional annotation.<br>
+I downloaded the Gene Ontology annotations for yeast from [Uniprot](https://www.uniprot.org/proteomes/UP000002311), with gene names as identifiers. GO Consortium data is available under [Creative Commons Attribution 4.0 Unported License](https://creativecommons.org/licenses/by/4.0/legalcode). Let's use the GO Biological Process as an example, the gmt file can be found in this repository as well:
 
 ```r
-pathways <- gmtPathways("Yeast_KEGG_2018.gmt")
+annotations <- gmtPathways("go-bp_gene-symbols_uniprot.gmt")
 
 #Prepare the rank file for the ura2-met6 contrast
 #Replace the UNIPROT accession with the Gene name
@@ -606,25 +607,25 @@ ranks[1:10]
 
 Run fgsea and go with the default settings for enrichment:
 ```r
-res_gsea <- fgseaMultilevel(pathways, ranks, minSize=15, maxSize=500)
+res_gsea <- fgseaMultilevel(annotations, ranks, minSize=15, maxSize=500)
 head(res_gsea)
 ```
 
 ```
-##                                                  pathway      pval      padj    log2err         ES        NES
-## 1: Alanine, aspartate and glutamate metabolism  sce00250 0.1171875 0.5433239 0.18138313 -0.7167997 -1.3618696
-## 2:                  Amino acid related enzymes  sce01007 0.1351351 0.5492308 0.16693385 -0.6427450 -1.3379893
-## 3: Amino sugar and nucleotide sugar metabolism  sce00520 0.1035156 0.5433239 0.19381330 -0.7312954 -1.3894104
-## 4:                 Aminoacyl-tRNA biosynthesis  sce00970 0.1520468 0.5492308 0.15740290 -0.6841687 -1.3095419
-## 5:                           Autophagy - yeast  sce04138 0.6789366 0.9358315 0.06479434  0.4291941  0.8390423
-## 6:                          Cell cycle - yeast  sce04111 0.1710794 0.5492308 0.15114876  0.6911210  1.2884854
-##    size                         leadingEdge
-## 1:   20 GAD1,ADE4,UGA1,ASN2,ADE13,ADE12,...
-## 2:   34   BAT2,UGA1,KRS1,SER1,CAR2,DPS1,...
-## 3:   20   HXK1,PGM2,GLK1,MCR1,PGI1,GFA1,...
-## 4:   21  KRS1,DPS1,ILS1,VAS1,THS1,DED81,...
-## 5:   21                           VTI1,RAS1
-## 6:   16                 HRT1,TUP1,CYC8,PHO5
+##                                                pathway        pval       padj    log2err         ES        NES size
+## 1:     'de novo' IMP biosynthetic process [GO:0006189] 0.001805905 0.04845846 0.45505987 -0.8652148 -1.6370744   18
+## 2: ATP synthesis coupled proton transport [GO:0015986] 0.142857143 0.42261430 0.16565670  0.6715563  1.3203347   20
+## 3:                             DNA repair [GO:0006281] 0.338114754 0.61859631 0.10282184  0.4914060  1.0612703   40
+## 4:                        DNA replication [GO:0006260] 0.225378788 0.51107021 0.12443417 -0.6678331 -1.2344812   16
+## 5:                     Golgi organization [GO:0007030] 0.984790875 0.99717818 0.04406403 -0.2835116 -0.5364327   18
+## 6:            Golgi to endosome transport [GO:0006895] 0.348514851 0.62345435 0.09889030 -0.5696536 -1.0822373   20
+##                            leadingEdge
+## 1: ADE17,ADE17,ADE4,ADE4,ADE2,ADE2,...
+## 2: ATP18,ATP18,ATP16,ATP16,ATP15,ATP15
+## 3:   HRT1,HRT1,BDF1,BDF1,HTA2,HTA2,...
+## 4:                 RNR4,RNR4,RNR2,RNR2
+## 5:   ERV25,ERV25,ERP1,ERP1,EMP47,EMP47
+## 6:     CHC1,CHC1,PEP1,PEP1,VPS45,VPS45
 ```
 
 Ten pathways with the largest positive enrichment scores:
@@ -633,28 +634,28 @@ res_gsea[ES > 0][head(order(pval), n=10),]
 ```
 
 ```
-##                                          pathway       pval      padj    log2err        ES       NES size
-##  1:                     RNA polymerase  sce03020 0.06680162 0.5433239 0.24891111 0.7692610 1.4599652   18
-##  2: Cysteine and methionine metabolism  sce00270 0.08230453 0.5433239 0.22496609 0.7422452 1.4533972   22
-##  3:            Transcription machinery  sce03021 0.10344828 0.5433239 0.19782202 0.6075393 1.3562776   47
-##  4:                 Cell cycle - yeast  sce04111 0.17107943 0.5492308 0.15114876 0.6911210 1.2884854   16
-##  5:              Pyrimidine metabolism  sce00240 0.19161677 0.5492308 0.14040624 0.5678268 1.2208266   37
-##  6:                      RNA transport  sce03013 0.25100402 0.6095812 0.12098514 0.5122395 1.1346803   43
-##  7:                Translation factors  sce03012 0.35699797 0.6743295 0.09889030 0.4655867 1.0341527   45
-##  8: Chromosome and associated proteins  sce03036 0.41010101 0.7001980 0.09054289 0.4193949 0.9933531   75
-##  9:              Cytoskeleton proteins  sce04812 0.41090147 0.7001980 0.09255289 0.4955390 1.0193067   29
-## 10:     MAPK signaling pathway - yeast  sce04011 0.42973523 0.7069838 0.08835944 0.5100515 1.0137484   23
-##                                leadingEdge
-##  1: RPC11,RPA14,RPA12,RPB9,RPC53,RPC19,...
-##  2:                 MET6,SAM4,BAT1,YKL069W
-##  3:   RPC11,PAF1,RPA14,RPA12,RPB9,TOA2,...
-##  4:                    HRT1,TUP1,CYC8,PHO5
-##  5:   URA4,FCY1,RPC11,DPB4,RPA14,RPA12,...
-##  6:    SUI1,TIF11,NUP57,TIF3,UBC9,MLP1,...
-##  7:     SUI1,TIF11,EFB1,EAP1,HYP2,TIF3,...
-##  8:     HTB2,NSR1,DPB4,SDC1,NHP10,HTZ1,...
-##  9:     IQG1,ARC15,DYN2,TPM1,TPM2,RBL2,...
-## 10:               BAR1,PAF1,YCK1,TUP1,CYC8
+##                                                                                                   pathway         pval
+##  1:                                                          methionine biosynthetic process [GO:0009086] 1.598415e-06
+##  2:                                                  retrograde transport, endosome to Golgi [GO:0042147] 1.656132e-03
+##  3:                                                                      signal transduction [GO:0007165] 4.900432e-03
+##  4:                                                        transcription by RNA polymerase I [GO:0006360] 1.420470e-02
+##  5: maturation of LSU-rRNA from tricistronic rRNA transcript (SSU-rRNA, 5.8S rRNA, LSU-rRNA) [GO:0000463] 3.138075e-02
+##  6:                                               regulation of transcription, DNA-templated [GO:0006355] 3.434343e-02
+##  7:                                           formation of translation preinitiation complex [GO:0001731] 3.462322e-02
+##  8:                                                       ribosomal large subunit biogenesis [GO:0042273] 3.564356e-02
+##  9:                                                                   cell wall organization [GO:0071555] 3.781513e-02
+## 10:                                         lysine biosynthetic process via aminoadipic acid [GO:0019878] 3.781513e-02
+##             padj   log2err        ES      NES size                               leadingEdge
+##  1: 0.0002573448 0.6435518 0.9839386 1.828575   16                       MET6,MET6,HOM6,HOM6
+##  2: 0.0484584587 0.4550599 0.9246455 1.718383   16                       VTI1,VTI1,YPT6,YPT6
+##  3: 0.1056580454 0.4070179 0.8866317 1.647738   16                       IQG1,IQG1,MDG1,MDG1
+##  4: 0.1905797198 0.3807304 0.8665128 1.748879   24     RPC10,RPC10,PAF1,PAF1,RPA14,RPA14,...
+##  5: 0.2783300199 0.3760393 0.7928776 1.677581   36       NOP2,NOP2,NOP12,NOP12,CIC1,CIC1,...
+##  6: 0.2783300199 0.3521714 0.8253006 1.665701   24       GIM5,GIM5,TAF14,TAF14,BUR6,BUR6,...
+##  7: 0.2783300199 0.3521714 0.8444790 1.660807   22           SUI1,SUI1,TIF11,TIF11,TIF3,TIF3
+##  8: 0.2783300199 0.3417934 0.7232220 1.663805   60 NOP2,NOP2,RPL26A,RPL26A,RPL26B,RPL26B,...
+##  9: 0.2783300199 0.3417934 0.8248167 1.572155   18       BGL2,BGL2,SCW10,SCW10,SCW4,SCW4,...
+## 10: 0.2783300199 0.3417934 0.8242178 1.571014   18                     ACO2,ACO2,LYS21,LYS21
 ```
 
 Ten pathways with the largest negative enrichment scores:
@@ -663,70 +664,66 @@ res_gsea[ES < 0][head(order(pval), n=10),]
 ```
 
 ```
-##                                                   pathway       pval      padj   log2err         ES       NES
-##  1:     Glyoxylate and dicarboxylate metabolism  sce00630 0.03913894 0.5433239 0.3234705 -0.8231764 -1.513008
-##  2:    Glycine, serine and threonine metabolism  sce00260 0.06601942 0.5433239 0.2450418 -0.7571428 -1.485321
-##  3:                   Pentose phosphate pathway  sce00030 0.07086614 0.5433239 0.2377938 -0.7684281 -1.436140
-##  4:                Glycolysis - Gluconeogenesis  sce00010 0.07587549 0.5433239 0.2279872 -0.7009631 -1.478111
-##  5: Amino sugar and nucleotide sugar metabolism  sce00520 0.10351562 0.5433239 0.1938133 -0.7312954 -1.389410
-##  6:                                   Phagosome  sce04145 0.10916179 0.5433239 0.1882041 -0.7191699 -1.376536
-##  7:               Starch and sucrose metabolism  sce00500 0.11456311 0.5433239 0.1830239 -0.6909523 -1.355472
-##  8: Alanine, aspartate and glutamate metabolism  sce00250 0.11718750 0.5433239 0.1813831 -0.7167997 -1.361870
-##  9:                  Amino acid related enzymes  sce01007 0.13513514 0.5492308 0.1669338 -0.6427450 -1.337989
-## 10:                        Glycosyltransferases  sce01003 0.14147287 0.5492308 0.1631801 -0.6836442 -1.326265
-##     size                         leadingEdge
-##  1:   16                 GCV2,SHM2,GCV1,CIT1
-##  2:   24                      GCV2,SHM2,GCV1
-##  3:   18   PGM2,PFK2,PGI1,GND1,PFK1,FBA1,...
-##  4:   39  HXK1,PGM2,GLK1,CDC19,PDC1,TDH1,...
-##  5:   20   HXK1,PGM2,GLK1,MCR1,PGI1,GFA1,...
-##  6:   21   ACT1,VMA1,SSH1,SSS1,VMA2,TUB1,...
-##  7:   24   GPH1,HXK1,PGM2,GLK1,TSL1,TPS1,...
-##  8:   20 GAD1,ADE4,UGA1,ASN2,ADE13,ADE12,...
-##  9:   34   BAT2,UGA1,KRS1,SER1,CAR2,DPS1,...
-## 10:   22   TPS1,TPS2,GSY2,PMT1,KTR4,KTR1,...
+##                                                 pathway         pval        padj   log2err         ES       NES size
+##  1:           one-carbon metabolic process [GO:0006730] 8.247868e-05 0.006639533 0.5384341 -0.9292738 -1.765450   20
+##  2:              cellular response to heat [GO:0034605] 2.037943e-04 0.010936961 0.5188481 -0.8835375 -1.783460   26
+##  3: purine nucleotide biosynthetic process [GO:0006164] 1.326554e-03 0.048458459 0.4550599 -0.8567943 -1.774163   30
+##  4:     'de novo' IMP biosynthetic process [GO:0006189] 1.805905e-03 0.048458459 0.4550599 -0.8652148 -1.637074   18
+##  5:         histidine biosynthetic process [GO:0000105] 5.900091e-03 0.105658045 0.4070179 -0.9113825 -1.684679   16
+##  6:  cellular response to oxidative stress [GO:0034599] 5.906350e-03 0.105658045 0.4070179 -0.7035835 -1.663719   78
+##  7:        ergosterol biosynthetic process [GO:0006696] 9.078254e-03 0.146159888 0.3807304 -0.7886320 -1.660427   32
+##  8:              glucose metabolic process [GO:0006006] 1.092839e-02 0.159951920 0.3807304 -0.8907116 -1.646469   16
+##  9:                       response to heat [GO:0009408] 3.326810e-02 0.278330020 0.3521714 -0.8290870 -1.602254   22
+## 10:            glutamine metabolic process [GO:0006541] 3.550296e-02 0.278330020 0.3417934 -0.8081447 -1.590973   24
+##                                 leadingEdge
+##  1:       GCV2,GCV2,SHM2,SHM2,SAM1,SAM1,...
+##  2: HSP12,HSP12,HSP26,HSP26,HSP30,HSP30,...
+##  3:     MTD1,MTD1,ADE17,ADE17,ADE4,ADE4,...
+##  4:     ADE17,ADE17,ADE4,ADE4,ADE2,ADE2,...
+##  5:                               HIS4,HIS4
+##  6:     HSP12,HSP12,ACT1,ACT1,TPS1,TPS1,...
+##  7:   ERG27,ERG27,ERG13,ERG13,MCR1,MCR1,...
+##  8:           HXK1,HXK1,PGM2,PGM2,GLK1,GLK1
+##  9:     HSP42,HSP42,DCS1,DCS1,GLC7,GLC7,...
+## 10:       ADE4,ADE4,ADE6,ADE6,ASN2,ASN2,...
 ```
 Let's look at one of the pathways from the top with positive enrichment scores:
 ```r
 plotEnrichment(
-  pathways[["Cysteine and methionine metabolism  sce00270"]],
+  annotations[["methionine biosynthetic process [GO:0009086]"]],
   ranks
-  ) + labs(title="Cysteine and methionine metabolism")
+) + labs(title="methionine biosynthetic process [GO:0009086]")
 ```
 
 ![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-13.png)
 
 ```r
-pathways[["Cysteine and methionine metabolism  sce00270"]]
+annotations[["methionine biosynthetic process [GO:0009086]"]]
 ```
 
 ```
-##  [1] "AAT1"    "AAT2"    "TUM1"    "MDH2"    "MDH3"    "YGR012W" "STR3"    "UTR4"    "STR2"    "ARO8"   
-## [11] "CYS4"    "HOM2"    "CYS3"    "CHA1"    "HOM3"    "HOM6"    "SAM4"    "ADI1"    "GSH2"    "SAM2"   
-## [21] "GSH1"    "YKL069W" "MEU1"    "SAM1"    "MET17"   "YLL058W" ""        "BAT2"    "BAT1"    "MDE1"   
-## [31] "MRI1"    "SPE3"    "SPE4"    "SPE2"    "SAH1"    "YML082W" "MET2"    "MHT1"    "MDH1"    "MET6"   
-## [41] "IRC7"
+##  [1] "ADE3"  "ADE3"  "HOM2"  "HOM2"  "HOM3"  "HOM3"  "HOM6"  "HOM6"  "IRC7"  "IRC7"  "MET1"  "MET1"  "MET12" "MET12" "MET13"
+## [16] "MET13" "MET14" "MET14" "MET16" "MET16" "MET2"  "MET2"  "MET22" "MET22" "MET28" "MET28" "MET30" "MET30" "MET4"  "MET4" 
+## [31] "MET6"  "MET6"  "MHT1"  "MHT1"  "MIS1"  "MIS1"  "STR2"  "STR2"  "STR3"  "STR3"
 ```
 
 And at one of the pathways from the top with negative enrichment scores:
 ```r
 plotEnrichment(
-  pathways[["Glycine, serine and threonine metabolism  sce00260"]],
+  annotations[["one-carbon metabolic process [GO:0006730]"]],
   ranks
-) + labs(title="Glycine, serine and threonine metabolism")
+) + labs(title="one-carbon metabolic process [GO:0006730]")
 ```
 
 ![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-14.png)
 
 ```r
-pathways[["Glycine, serine and threonine metabolism  sce00260"]]
+annotations[["one-carbon metabolic process [GO:0006730]"]]
 ```
 
 ```
-##  [1] "AGX1"    "HEM1"    "CYS4"    "HOM2"    "CYS3"    "CHA1"    "SER33"   "HOM3"    "HOM6"    "THR4"   
-## [11] "THR1"    "IRC15"   "CHO1"    "GLY1"    "SHM1"    ""        "SHM2"    "YMR226C" "TRP5"    "GPM2"   
-## [21] "GPM1"    "GPM3"    "TDA10"   "LPD1"    "SER3"    "SER1"    "GCV2"    "SER2"    "GCV1"    "GCV3"   
-## [31] "DSD1"    "ILV1"
+##  [1] "DFR1" "DFR1" "FOL3" "FOL3" "FSF1" "FSF1" "GCV1" "GCV1" "GCV2" "GCV2" "GCV3" "GCV3" "MET7" "MET7" "MTD1" "MTD1" "RMA1"
+## [18] "RMA1" "SAH1" "SAH1" "SAM1" "SAM1" "SAM2" "SAM2" "SHM1" "SHM1" "SHM2" "SHM2"
 ```
 
 
