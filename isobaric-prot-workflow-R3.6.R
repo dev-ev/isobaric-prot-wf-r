@@ -546,13 +546,14 @@ head(res_gsea)
 #head(res_gsea[order(pval), ])
 res_gsea[ES > 0][head(order(pval), n=10),]
 res_gsea[ES < 0][head(order(pval), n=10),]
+
 plotEnrichment(
-  annotations[["methionine biosynthetic process [GO:0009086]"]],
+  annotations[["ribosomal large subunit biogenesis [GO:0042273]"]],
   ranks
-) + labs(title="methionine biosynthetic process [GO:0009086]")
-annotations[["methionine biosynthetic process [GO:0009086]"]]
+) + labs(title="ribosomal large subunit biogenesis [GO:0042273]")
+annotations[["ribosomal large subunit biogenesis [GO:0042273]"]]
 plotEnrichment(
-  annotations[["one-carbon metabolic process [GO:0006730]"]],
+  annotations[["purine nucleotide biosynthetic process [GO:0006164]"]],
   ranks
-) + labs(title="one-carbon metabolic process [GO:0006730]")
-annotations[["one-carbon metabolic process [GO:0006730]"]]
+) + labs(title="purine nucleotide biosynthetic process [GO:0006164]")
+annotations[["purine nucleotide biosynthetic process [GO:0006164]"]]
