@@ -612,20 +612,20 @@ head(res_gsea)
 ```
 
 ```
-##                                                pathway        pval       padj    log2err         ES        NES size
-## 1:     'de novo' IMP biosynthetic process [GO:0006189] 0.001805905 0.04845846 0.45505987 -0.8652148 -1.6370744   18
-## 2: ATP synthesis coupled proton transport [GO:0015986] 0.142857143 0.42261430 0.16565670  0.6715563  1.3203347   20
-## 3:                             DNA repair [GO:0006281] 0.338114754 0.61859631 0.10282184  0.4914060  1.0612703   40
-## 4:                        DNA replication [GO:0006260] 0.225378788 0.51107021 0.12443417 -0.6678331 -1.2344812   16
-## 5:                     Golgi organization [GO:0007030] 0.984790875 0.99717818 0.04406403 -0.2835116 -0.5364327   18
-## 6:            Golgi to endosome transport [GO:0006895] 0.348514851 0.62345435 0.09889030 -0.5696536 -1.0822373   20
+##                                        pathway      pval      padj    log2err         ES        NES size
+## 1:                     DNA repair [GO:0006281] 0.5493827 0.9792398 0.07569463  0.4890924  0.9355784   20
+## 2:    actin filament organization [GO:0007015] 0.9277344 0.9939024 0.04802204 -0.3478877 -0.6806408   21
+## 3:            aerobic respiration [GO:0009060] 0.4152893 0.9675056 0.09110731  0.5546527  1.0388591   18
+## 4: carbohydrate metabolic process [GO:0005975] 0.7070312 0.9792398 0.06064040 -0.4277279 -0.8368478   21
+## 5:                     cell cycle [GO:0007049] 0.8966942 0.9939024 0.05216303  0.3572035  0.6690387   18
+## 6:                  cell division [GO:0051301] 0.2551440 0.9181034 0.12154328  0.6158352  1.1780231   20
 ##                            leadingEdge
-## 1: ADE17,ADE17,ADE4,ADE4,ADE2,ADE2,...
-## 2: ATP18,ATP18,ATP16,ATP16,ATP15,ATP15
-## 3:   HRT1,HRT1,BDF1,BDF1,HTA2,HTA2,...
-## 4:                 RNR4,RNR4,RNR2,RNR2
-## 5:   ERV25,ERV25,ERP1,ERP1,EMP47,EMP47
-## 6:     CHC1,CHC1,PEP1,PEP1,VPS45,VPS45
+## 1: HRT1,BDF1,HTA2,RFA2,MGM101,MLP1,...
+## 2:                      ENT2,SAC6,RHO1
+## 3:     RIB1,MIX14,RIB3,QCR7,MIX17,RIP1
+## 4:   PGM2,CIT1,GPD1,GLC3,TAL1,MDH1,...
+## 5:                     CDC25,BNI5,NSP1
+## 6:                     HRT1,CDC25,UBC9
 ```
 
 Ten pathways with the largest positive enrichment scores:
@@ -634,28 +634,28 @@ res_gsea[ES > 0][head(order(pval), n=10),]
 ```
 
 ```
-##                                                                                                   pathway         pval
-##  1:                                                          methionine biosynthetic process [GO:0009086] 1.598415e-06
-##  2:                                                  retrograde transport, endosome to Golgi [GO:0042147] 1.656132e-03
-##  3:                                                                      signal transduction [GO:0007165] 4.900432e-03
-##  4:                                                        transcription by RNA polymerase I [GO:0006360] 1.420470e-02
-##  5: maturation of LSU-rRNA from tricistronic rRNA transcript (SSU-rRNA, 5.8S rRNA, LSU-rRNA) [GO:0000463] 3.138075e-02
-##  6:                                               regulation of transcription, DNA-templated [GO:0006355] 3.434343e-02
-##  7:                                           formation of translation preinitiation complex [GO:0001731] 3.462322e-02
-##  8:                                                       ribosomal large subunit biogenesis [GO:0042273] 3.564356e-02
-##  9:                                                                   cell wall organization [GO:0071555] 3.781513e-02
-## 10:                                         lysine biosynthetic process via aminoadipic acid [GO:0019878] 3.781513e-02
-##             padj   log2err        ES      NES size                               leadingEdge
-##  1: 0.0002573448 0.6435518 0.9839386 1.828575   16                       MET6,MET6,HOM6,HOM6
-##  2: 0.0484584587 0.4550599 0.9246455 1.718383   16                       VTI1,VTI1,YPT6,YPT6
-##  3: 0.1056580454 0.4070179 0.8866317 1.647738   16                       IQG1,IQG1,MDG1,MDG1
-##  4: 0.1905797198 0.3807304 0.8665128 1.748879   24     RPC10,RPC10,PAF1,PAF1,RPA14,RPA14,...
-##  5: 0.2783300199 0.3760393 0.7928776 1.677581   36       NOP2,NOP2,NOP12,NOP12,CIC1,CIC1,...
-##  6: 0.2783300199 0.3521714 0.8253006 1.665701   24       GIM5,GIM5,TAF14,TAF14,BUR6,BUR6,...
-##  7: 0.2783300199 0.3521714 0.8444790 1.660807   22           SUI1,SUI1,TIF11,TIF11,TIF3,TIF3
-##  8: 0.2783300199 0.3417934 0.7232220 1.663805   60 NOP2,NOP2,RPL26A,RPL26A,RPL26B,RPL26B,...
-##  9: 0.2783300199 0.3417934 0.8248167 1.572155   18       BGL2,BGL2,SCW10,SCW10,SCW4,SCW4,...
-## 10: 0.2783300199 0.3417934 0.8242178 1.571014   18                     ACO2,ACO2,LYS21,LYS21
+##                                                                                                   pathway       pval
+##  1: maturation of LSU-rRNA from tricistronic rRNA transcript (SSU-rRNA, 5.8S rRNA, LSU-rRNA) [GO:0000463] 0.05785124
+##  2:                                                                     chromatin remodeling [GO:0006338] 0.06918239
+##  3:                                                       ribosomal large subunit biogenesis [GO:0042273] 0.07171315
+##  4:                                                       fungal-type cell wall organization [GO:0031505] 0.07370518
+##  5:                                                       transcription by RNA polymerase II [GO:0006366] 0.08176101
+##  6:                                negative regulation of transcription by RNA polymerase II [GO:0000122] 0.10062893
+##  7:                                         regulation of transcription by RNA polymerase II [GO:0006357] 0.17283951
+##  8:                                                                      ribosome biogenesis [GO:0042254] 0.19591837
+##  9:                                positive regulation of transcription by RNA polymerase II [GO:0045944] 0.24696356
+## 10:                                                                            cell division [GO:0051301] 0.25514403
+##          padj   log2err        ES      NES size                            leadingEdge
+##  1: 0.4832041 0.2712886 0.7913647 1.482218   18              NOP2,NOP12,CIC1,TIF6,RPF2
+##  2: 0.4832041 0.2489111 0.7765741 1.440644   17     CHZ1,CBF1,HTZ1,TAF14,BDF1,CYC8,...
+##  3: 0.4832041 0.2377938 0.7208805 1.497722   30 NOP2,RPL26A,RPL26B,TIF6,MAK21,REH1,...
+##  4: 0.4832041 0.2343926 0.6997807 1.462006   31      CIS3,ZEO1,BAR1,BGL2,EXG1,CRH1,...
+##  5: 0.4832041 0.2279872 0.7579933 1.400889   16    RPC10,RPB9,TAF14,BUR6,TFA1,RPB3,...
+##  6: 0.5132075 0.2042948 0.7395614 1.366824   16     PAF1,RPA12,CBF1,BUR6,ESS1,RAP1,...
+##  7: 0.8013468 0.1511488 0.6526132 1.248375   20      PAF1,CBF1,SPN1,HTZ1,TUP1,CYC8,...
+##  8: 0.8326531 0.1404062 0.6386159 1.241881   21         RPC10,RPA14,RPA12,RPL40A,RPC19
+##  9: 0.9181034 0.1226792 0.5842056 1.187375   26      KAE1,CBF1,BUR6,ESS1,RAP1,TUP1,...
+## 10: 0.9181034 0.1215433 0.6158352 1.178023   20                        HRT1,CDC25,UBC9
 ```
 
 Ten pathways with the largest negative enrichment scores:
@@ -664,66 +664,67 @@ res_gsea[ES < 0][head(order(pval), n=10),]
 ```
 
 ```
-##                                                 pathway         pval        padj   log2err         ES       NES size
-##  1:           one-carbon metabolic process [GO:0006730] 8.247868e-05 0.006639533 0.5384341 -0.9292738 -1.765450   20
-##  2:              cellular response to heat [GO:0034605] 2.037943e-04 0.010936961 0.5188481 -0.8835375 -1.783460   26
-##  3: purine nucleotide biosynthetic process [GO:0006164] 1.326554e-03 0.048458459 0.4550599 -0.8567943 -1.774163   30
-##  4:     'de novo' IMP biosynthetic process [GO:0006189] 1.805905e-03 0.048458459 0.4550599 -0.8652148 -1.637074   18
-##  5:         histidine biosynthetic process [GO:0000105] 5.900091e-03 0.105658045 0.4070179 -0.9113825 -1.684679   16
-##  6:  cellular response to oxidative stress [GO:0034599] 5.906350e-03 0.105658045 0.4070179 -0.7035835 -1.663719   78
-##  7:        ergosterol biosynthetic process [GO:0006696] 9.078254e-03 0.146159888 0.3807304 -0.7886320 -1.660427   32
-##  8:              glucose metabolic process [GO:0006006] 1.092839e-02 0.159951920 0.3807304 -0.8907116 -1.646469   16
-##  9:                       response to heat [GO:0009408] 3.326810e-02 0.278330020 0.3521714 -0.8290870 -1.602254   22
-## 10:            glutamine metabolic process [GO:0006541] 3.550296e-02 0.278330020 0.3417934 -0.8081447 -1.590973   24
-##                                 leadingEdge
-##  1:       GCV2,GCV2,SHM2,SHM2,SAM1,SAM1,...
-##  2: HSP12,HSP12,HSP26,HSP26,HSP30,HSP30,...
-##  3:     MTD1,MTD1,ADE17,ADE17,ADE4,ADE4,...
-##  4:     ADE17,ADE17,ADE4,ADE4,ADE2,ADE2,...
-##  5:                               HIS4,HIS4
-##  6:     HSP12,HSP12,ACT1,ACT1,TPS1,TPS1,...
-##  7:   ERG27,ERG27,ERG13,ERG13,MCR1,MCR1,...
-##  8:           HXK1,HXK1,PGM2,PGM2,GLK1,GLK1
-##  9:     HSP42,HSP42,DCS1,DCS1,GLC7,GLC7,...
-## 10:       ADE4,ADE4,ADE6,ADE6,ASN2,ASN2,...
+##                                                                                pathway        pval      padj    log2err
+##  1:                                purine nucleotide biosynthetic process [GO:0006164] 0.006649502 0.3391246 0.40701792
+##  2:                                 cellular response to oxidative stress [GO:0034599] 0.040935673 0.4832041 0.31532483
+##  3:                                       ergosterol biosynthetic process [GO:0006696] 0.041904762 0.4832041 0.30775005
+##  4:                                                    glycolytic process [GO:0006096] 0.085271318 0.4832041 0.21392786
+##  5: retrograde vesicle-mediated transport, Golgi to endoplasmic reticulum [GO:0006890] 0.535019455 0.9792398 0.07417590
+##  6:                                                           endocytosis [GO:0006897] 0.543859649 0.9792398 0.07343814
+##  7:                                                           translation [GO:0006412] 0.609523810 0.9792398 0.06658921
+##  8:                                      ribosomal large subunit assembly [GO:0000027] 0.705426357 0.9792398 0.06037864
+##  9:                                        carbohydrate metabolic process [GO:0005975] 0.707031250 0.9792398 0.06064040
+## 10:                                                       rRNA processing [GO:0006364] 0.727626459 0.9792398 0.05909548
+##             ES        NES size                        leadingEdge
+##  1: -0.8517795 -1.5621756   15 MTD1,ADE17,ADE4,ADE2,ADE6,ADE8,...
+##  2: -0.6998521 -1.5312424   39 HSP12,ACT1,TPS1,GAD1,YHB1,MCR1,...
+##  3: -0.7858271 -1.4633302   16        ERG27,ERG13,MCR1,ERG20,ERG9
+##  4: -0.7048514 -1.3727129   20 HXK1,GLK1,CDC19,TDH1,PFK2,PGI1,...
+##  5: -0.5006317 -0.9619512   19    RER1,YPT1,SEC21,COP1,GET3,ERV46
+##  6: -0.4312358 -0.9435230   39                ACT1,CHC1,ENT2,DNF1
+##  7: -0.4857894 -0.9046142   16                             RPL24B
+##  8: -0.4277358 -0.8330244   20                        RPL24B,RPL3
+##  9: -0.4277279 -0.8368478   21  PGM2,CIT1,GPD1,GLC3,TAL1,MDH1,...
 ```
 Let's look at one of the pathways from the top with positive enrichment scores:
 ```r
 plotEnrichment(
-  annotations[["methionine biosynthetic process [GO:0009086]"]],
+  annotations[["ribosomal large subunit biogenesis [GO:0042273]"]],
   ranks
-) + labs(title="methionine biosynthetic process [GO:0009086]")
+) + labs(title="ribosomal large subunit biogenesis [GO:0042273]")
 ```
 
 ![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-13.png)
 
 ```r
-annotations[["methionine biosynthetic process [GO:0009086]"]]
+annotations[["ribosomal large subunit biogenesis [GO:0042273]"]]
 ```
 
 ```
-##  [1] "ADE3"  "ADE3"  "HOM2"  "HOM2"  "HOM3"  "HOM3"  "HOM6"  "HOM6"  "IRC7"  "IRC7"  "MET1"  "MET1"  "MET12" "MET12" "MET13"
-## [16] "MET13" "MET14" "MET14" "MET16" "MET16" "MET2"  "MET2"  "MET22" "MET22" "MET28" "MET28" "MET30" "MET30" "MET4"  "MET4" 
-## [31] "MET6"  "MET6"  "MHT1"  "MHT1"  "MIS1"  "MIS1"  "STR2"  "STR2"  "STR3"  "STR3"
+##  [1] "ACL4"    "AFG2"    "ALB1"    "EBP2"    "ERB1"    "HAS1"    "HRR25"   "JIP5"    "JJJ1"    "LOC1"    "MAK11"   "MAK16"  
+## [13] "MAK21"   "MAK5"    "MRT4"    "NIP7"    "NOC2"    "NOC3"    "NOG1"    "NOP15"   "NOP16"   "NOP2"    "NOP4"    "NOP7"   
+## [25] "NOP8"    "NSA1"    "NSA2"    "PRP43"   "PUF6"    "REH1"    "REI1"    "RIX7"    "RLI1"    "RLP24"   "RLP7"    "RPL14A" 
+## [37] "RPL14B"  "RPL26A"  "RPL26B"  "RPL33A"  "RPL33B"  "RPL7A"   "RPL7B"   "RRP14"   "RRP8"    "RRS1"    "SDA1"    "SQT1"   
+## [49] "SYO1"    "TIF4631" "TIF6"    "TRM112"  "YTM1"
 ```
 
 And at one of the pathways from the top with negative enrichment scores:
 ```r
 plotEnrichment(
-  annotations[["one-carbon metabolic process [GO:0006730]"]],
+  annotations[["purine nucleotide biosynthetic process [GO:0006164]"]],
   ranks
-) + labs(title="one-carbon metabolic process [GO:0006730]")
+) + labs(title="purine nucleotide biosynthetic process [GO:0006164]")
 ```
 
 ![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-14.png)
 
 ```r
-annotations[["one-carbon metabolic process [GO:0006730]"]]
+annotations[["purine nucleotide biosynthetic process [GO:0006164]"]]
 ```
 
 ```
-##  [1] "DFR1" "DFR1" "FOL3" "FOL3" "FSF1" "FSF1" "GCV1" "GCV1" "GCV2" "GCV2" "GCV3" "GCV3" "MET7" "MET7" "MTD1" "MTD1" "RMA1"
-## [18] "RMA1" "SAH1" "SAH1" "SAM1" "SAM1" "SAM2" "SAM2" "SHM1" "SHM1" "SHM2" "SHM2"
+##  [1] "ADE1"   "ADE12"  "ADE13"  "ADE16"  "ADE17"  "ADE2"   "ADE3"   "ADE4"   "ADE5,7" "ADE6"   "ADE8"   "MIS1"   "MTD1"  
+## [14] "PRS1"   "PRS2"   "PRS3"   "PRS4"   "PRS5"
 ```
 
 
