@@ -37,6 +37,7 @@ dim(all_proteins)
 #Construct a function to rename the ratios
 #and simultaneously put the ratio columns in a list
 #OBS: pay attention to the particular format of  the column names
+#OBS: the code below is adapted for Proteome Discoverer
 
 rename_ratios <- function(df) {
   #Initialize the vector of ratio columns
@@ -52,10 +53,25 @@ rename_ratios <- function(df) {
   }
   list(df, ratio_columns)
 }
-
 res <- rename_ratios(all_proteins)
 all_proteins <- res[[1]]
 quan_columns <- res[[2]]
+quan_columns
+
+#If you only want to find the quantitative columns, but not to rename them
+
+find_ratios <- function(df) {
+  #Initialize the vector of ratio columns
+  ratio_columns <- character()
+  for ( cname in colnames(df) ) {
+    #check the columns one by one
+    if ( grepl("Abundance.Ratio", cname) ) {
+      ratio_columns <- c(ratio_columns, cname)
+    }
+  }
+  ratio_columns
+}
+quan_columns <- find_ratios(all_proteins)
 quan_columns
 
 dfWide <- all_proteins %>%
